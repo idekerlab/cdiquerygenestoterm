@@ -27,6 +27,8 @@ def _parse_arguments(desc, args):
                         type=int, help='Time in seconds to'
                                        'wait between checks on task '
                                        'completion')
+    parser.add_argument('--connect_timeout', default=10,
+                        type=int, help='http connection timeout in seconds')
     return parser.parse_args(args)
 
 
