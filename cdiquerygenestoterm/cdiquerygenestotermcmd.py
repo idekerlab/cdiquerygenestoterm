@@ -80,6 +80,22 @@ def get_result_in_mapped_term_json(resultasdict):
     :param resultasdict:
     :return:
     """
+    if 'sources' not in resultasdict:
+        sys.stderr.write('No sources found in results\n')
+        return None
+
+    if len(resultasdict['sources']) <= 0:
+        sys.stderr.write('Source is empty\n')
+        return None
+
+    if 'results' not in resultasdict['sources'][0]:
+        sys.stderr.write('Results not in source\n')
+        return None
+
+    if len(resultasdict['sources'][0]['results']) <= 0:
+        sys.stderr.write('No result found\n')
+        return None
+
     firstresult = resultasdict['sources'][0]['results'][0]
     colon_loc = firstresult['description'].find(':')
     if colon_loc == -1:
