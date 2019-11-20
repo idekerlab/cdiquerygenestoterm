@@ -16,7 +16,7 @@ import shutil
 from unittest.mock import MagicMock
 import pandas as pd
 
-from cdgprofilergenestoterm import cdgprofilergenestotermcmd
+from cdiquerygenestoterm import cdiquerygenestotermcmd
 
 
 class TestCdgprofilergenestoterm(unittest.TestCase):
@@ -33,49 +33,50 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
             tfile = os.path.join(temp_dir, 'foo')
             with open(tfile, 'w') as f:
                 f.write('hellothere')
-            res = cdgprofilergenestotermcmd.read_inputfile(tfile)
+            res = cdiquerygenestotermcmd.read_inputfile(tfile)
             self.assertEqual('hellothere', res)
         finally:
             shutil.rmtree(temp_dir)
 
     def test_parse_args(self):
         myargs = ['inputarg']
-        res = cdgprofilergenestotermcmd._parse_arguments('desc',
+        res = cdiquerygenestotermcmd._parse_arguments('desc',
                                                          myargs)
         self.assertEqual('inputarg', res.input)
-        self.assertEqual(0.00001, res.maxpval)
-        self.assertEqual('hsapiens', res.organism)
+        self.assertEqual('http://public.ndexbio.org', res.url)
+        self.assertEqual(1, res.polling_interval)
+        self.assertEqual(10, res.connect_timeout)
 
-    def test_run_gprofiler_no_file(self):
+    def test_run_iquery_no_file(self):
         temp_dir = tempfile.mkdtemp()
         try:
             tfile = os.path.join(temp_dir, 'foo')
             myargs = [tfile]
-            theargs = cdgprofilergenestotermcmd._parse_arguments('desc',
+            theargs = cdiquerygenestotermcmd._parse_arguments('desc',
                                                                  myargs)
             try:
-                cdgprofilergenestotermcmd.run_gprofiler(tfile,
-                                                        theargs)
+                cdiquerygenestotermcmd.run_iquery(tfile,
+                                                  theargs)
                 self.fail('Expected FileNotFoundError')
             except FileNotFoundError:
                 pass
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_run_gprofiler_empty_file(self):
+    def test_run_iquery_empty_file(self):
         temp_dir = tempfile.mkdtemp()
         try:
             tfile = os.path.join(temp_dir, 'foo')
             open(tfile, 'a').close()
             myargs = [tfile]
-            theargs = cdgprofilergenestotermcmd._parse_arguments('desc',
+            theargs = cdiquerygenestotermcmd._parse_arguments('desc',
                                                                  myargs)
-            res = cdgprofilergenestotermcmd.run_gprofiler(tfile,
+            res = cdiquerygenestotermcmd.run_iquery(tfile,
                                                           theargs)
             self.assertEqual(None, res)
         finally:
             shutil.rmtree(temp_dir)
-
+    """
     def test_run_gprofiler_with_empty_result(self):
         temp_dir = tempfile.mkdtemp()
         try:
@@ -85,9 +86,9 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
             with open(tfile, 'w') as f:
                 f.write('a,b,c')
             myargs = [tfile]
-            theargs = cdgprofilergenestotermcmd._parse_arguments('desc',
+            theargs = cdiquerygenestotermcmd._parse_arguments('desc',
                                                                  myargs)
-            res = cdgprofilergenestotermcmd.run_gprofiler(tfile,
+            res = cdiquerygenestotermcmd.run_gprofiler(tfile,
                                                           theargs,
                                                           gprofwrapper
                                                        =mygprofiler)
@@ -131,9 +132,9 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
             with open(tfile, 'w') as f:
                 f.write('a,b,c,')
             myargs = [tfile]
-            theargs = cdgprofilergenestotermcmd._parse_arguments('desc',
+            theargs = cdiquerygenestotermcmd._parse_arguments('desc',
                                                                  myargs)
-            res = cdgprofilergenestotermcmd.run_gprofiler(tfile,
+            res = cdiquerygenestotermcmd.run_gprofiler(tfile,
                                                           theargs,
                                                           gprofwrapper
                                                        =mygprofiler)
@@ -145,13 +146,14 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
                                                         no_evidences=False)
         finally:
             shutil.rmtree(temp_dir)
+    """
 
     def test_main_invalid_file(self):
         temp_dir = tempfile.mkdtemp()
         try:
             tfile = os.path.join(temp_dir, 'foo')
             myargs = ['prog', tfile]
-            res = cdgprofilergenestotermcmd.main(myargs)
+            res = cdiquerygenestotermcmd.main(myargs)
             self.assertEqual(2, res)
         finally:
             shutil.rmtree(temp_dir)
@@ -162,7 +164,7 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
             tfile = os.path.join(temp_dir, 'foo')
             open(tfile, 'a').close()
             myargs = ['prog', tfile]
-            res = cdgprofilergenestotermcmd.main(myargs)
+            res = cdiquerygenestotermcmd.main(myargs)
             self.assertEqual(0, res)
         finally:
             shutil.rmtree(temp_dir)
