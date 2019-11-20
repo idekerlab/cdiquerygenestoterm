@@ -23,6 +23,7 @@ requirements = [
 ]
 
 test_requirements = [
+    'requests-mock'
     # TODO: put package test requirements here
 ]
 
