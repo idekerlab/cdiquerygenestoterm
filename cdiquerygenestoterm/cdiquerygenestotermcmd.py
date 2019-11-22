@@ -27,8 +27,15 @@ def _parse_arguments(desc, args):
                         type=int, help='Time in seconds to'
                                        'wait between checks on task '
                                        'completion')
-    parser.add_argument('--connect_timeout', default=10,
-                        type=int, help='http connection timeout in seconds')
+    parser.add_argument('--timeout', default=30,
+                        type=int, help='Timeout for http '
+                                       'requests in seconds')
+    parser.add_argument('--retrycount', default=180,
+                        help='Number times to check for completed'
+                             'request. Take this value times'
+                             'the --polling_interval to determine'
+                             'how long this tool will wait'
+                             'for a completed result')
     return parser.parse_args(args)
 
 
@@ -42,7 +49,8 @@ def read_inputfile(inputfile):
         return f.read()
 
 
-def get_completed_result(resturl, taskid, user_agent):
+def get_completed_result(resturl, taskid, user_agent,
+                         timeout=30):
     """
 
     :param resultasdict:
@@ -51,29 +59,56 @@ def get_completed_result(resturl, taskid, user_agent):
     res = requests.get(resturl + '/integratedsearch/v1/' + taskid +
                        '?start=0&size=1',
                        headers={'Content-Type': 'application/json',
-                                'User_agent': user_agent})
+                                'User_agent': user_agent},
+                       timeout=timeout)
+    if res.status_code != 200:
+        sys.stderr.write('Received http error: ' +
+                         str(res.status_code) + '\n')
+        return None
     return res.json()
 
 
-def wait_for_result(resturl, taskid, user_agent, polling_interval=1):
+def wait_for_result(resturl, taskid, user_agent, polling_interval=1,
+                    timeout=30,
+                    retrycount=180):
     """
-
+    Polls **resturl** with **taskid**
     :param resturl:
     :param taskid:
-    :return:
+    :param user_agent:
+    :param polling_interval:
+    :param timeout:
+    :param retrycount:
+    :return: True if task completed successfully False otherwise
+    :rtype: bool
     """
-    while True:
-        res = requests.get(resturl + '/integratedsearch/v1/' + taskid + '/status',
-                           headers={'Content-Type': 'application/json',
-                                    'User_agent': user_agent})
-        if res.status_code is 200:
-            jsonres = res.json()
-            if jsonres['progress'] == 100:
-                if jsonres['status'] != 'complete':
-                    sys.stderr.write('Got error: ' + str(jsonres) + '\n')
-                    return False
-                break
+    counter = 0
+    while counter < retrycount:
+        try:
+            res = requests.get(resturl + '/integratedsearch/v1/' +
+                               taskid + '/status',
+                               headers={'Content-Type': 'application/json',
+                                        'User_agent': user_agent},
+                               timeout=timeout)
+
+            if res.status_code is 200:
+                jsonres = res.json()
+                if jsonres['progress'] == 100:
+                    if jsonres['status'] != 'complete':
+                        sys.stderr.write('Got error: ' + str(jsonres) + '\n')
+                        return False
+                    return True
+            else:
+                sys.stderr.write('Received error : ' +
+                                 str(res.status_code) +
+                                 ' while polling for completion')
+        except requests.exceptions.RequestException as e:
+            sys.stderr.write('Received exception waiting for task'
+                             'completion: ' + str(e))
+
+        counter += 1
         time.sleep(polling_interval)
+    return False
 
 
 def get_result_in_mapped_term_json(resultasdict):
@@ -82,23 +117,37 @@ def get_result_in_mapped_term_json(resultasdict):
     :param resultasdict:
     :return:
     """
-    if 'sources' not in resultasdict:
+    sources = 'sources'
+    results = 'results'
+    if resultasdict is None:
+        sys.stderr.write('Results are None\n')
+        return None
+
+    if sources not in resultasdict:
         sys.stderr.write('No sources found in results\n')
         return None
 
-    if len(resultasdict['sources']) <= 0:
+    if resultasdict[sources] is None:
+        sys.stderr.write('Source is None\n')
+        return None
+
+    if len(resultasdict[sources]) <= 0:
         sys.stderr.write('Source is empty\n')
         return None
 
-    if 'results' not in resultasdict['sources'][0]:
+    if results not in resultasdict[sources][0]:
         sys.stderr.write('Results not in source\n')
         return None
 
-    if len(resultasdict['sources'][0]['results']) <= 0:
+    if resultasdict[sources][0][results] is None:
+        sys.stderr.write('First result is None')
+        return None
+
+    if len(resultasdict[sources][0][results]) <= 0:
         sys.stderr.write('No result found\n')
         return None
 
-    firstresult = resultasdict['sources'][0]['results'][0]
+    firstresult = resultasdict[sources][0][results][0]
     colon_loc = firstresult['description'].find(':')
     if colon_loc == -1:
         source = 'NA'
@@ -134,17 +183,20 @@ def run_iquery(inputfile, theargs):
              'sourceList': ['enrichment']}
     res = requests.post(resturl + '/integratedsearch/v1/',
                        json=query, headers={'Content-Type': 'application/json',
-                                            'User-Agent': user_agent})
+                                            'User-Agent': user_agent},
+                        timeout=theargs.timeout)
     if res.status_code != 202:
         sys.stderr.write('Got error status from service: ' + str(res.status_code) + ' : ' + res.text + '\n')
-        return ''
+        return None
 
     taskid = res.json()['id']
 
-    if wait_for_result(resturl, taskid, user_agent) is False:
-        return
+    if wait_for_result(resturl, taskid, user_agent,
+                       timeout=theargs.timeout) is False:
+        return None
 
-    resjson = get_completed_result(resturl, taskid, user_agent)
+    resjson = get_completed_result(resturl, taskid, user_agent,
+                                   timeout=theargs.timeout)
     return get_result_in_mapped_term_json(resjson)
 
 
