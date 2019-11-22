@@ -24,13 +24,14 @@ def _parse_arguments(desc, args):
     parser.add_argument('--url', default='http://public.ndexbio.org',
                         help='Endpoint of REST service')
     parser.add_argument('--polling_interval', default=1,
-                        type=int, help='Time in seconds to'
-                                       'wait between checks on task '
-                                       'completion')
+                        type=float, help='Time in seconds to'
+                                         'wait between '
+                                         'checks on task '
+                                         'completion')
     parser.add_argument('--timeout', default=30,
                         type=int, help='Timeout for http '
                                        'requests in seconds')
-    parser.add_argument('--retrycount', default=180,
+    parser.add_argument('--retrycount', default=180, type=int,
                         help='Number times to check for completed'
                              'request. Take this value times'
                              'the --polling_interval to determine'
@@ -192,7 +193,9 @@ def run_iquery(inputfile, theargs):
     taskid = res.json()['id']
 
     if wait_for_result(resturl, taskid, user_agent,
-                       timeout=theargs.timeout) is False:
+                       timeout=theargs.timeout,
+                       retrycount=theargs.retrycount,
+                       polling_interval=theargs.polling_interval) is False:
         return None
 
     resjson = get_completed_result(resturl, taskid, user_agent,

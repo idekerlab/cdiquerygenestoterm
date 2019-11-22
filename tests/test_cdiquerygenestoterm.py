@@ -287,6 +287,35 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_request_wait_failed(self):
+        temp_dir = tempfile.mkdtemp()
+        try:
+            inputfile = os.path.join(temp_dir, 'input.txt')
+            with open(inputfile, 'w') as f:
+                f.write('hi,there\n')
+            user_agent = 'cdiquerygenestoterm/' + cdiquerygenestoterm.__version__
+            with requests_mock.Mocker() as m:
+                m.register_uri('GET', 'http://foo/'
+                                      'integratedsearch/v1/t/status',
+                               [{'json': {'progress': 50, 'status': ''},
+                                 'status_code': 200},
+                                {'status_code': 500},
+                                {'json': {'progress': 50, 'status': ''},
+                                 'status_code': 200}])
+                m.post('http://foo/integratedsearch/v1/',
+                       request_headers={'Content-Type': 'application/json',
+                                        'User-Agent': user_agent},
+                       status_code=202, json={'id': 't'})
+                myargs = [inputfile, '--url', 'http://foo',
+                          '--polling_interval', '0.001',
+                          '--retrycount', '2']
+                p = cdiquerygenestotermcmd._parse_arguments('desc',
+                                                            myargs)
+                res = cdiquerygenestotermcmd.run_iquery(inputfile, p)
+                self.assertEqual(None, res)
+        finally:
+            shutil.rmtree(temp_dir)
+
     def test_main_invalid_file(self):
         temp_dir = tempfile.mkdtemp()
         try:
