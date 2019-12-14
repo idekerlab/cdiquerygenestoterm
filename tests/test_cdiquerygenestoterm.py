@@ -212,6 +212,7 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
         result = {'sources': [{'results': [{'description': 'hi: somedescription',
                                             'details': {'PValue': 5},
                                             'url': 'someurl',
+                                            'nodes': 3,
                                             'hitGenes': ['1', '2']}]}]}
         res = cdiquerygenestotermcmd.get_result_in_mapped_term_json(result)
         self.assertEqual('somedescription', res['name'])
@@ -219,11 +220,13 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
         self.assertEqual('someurl', res['description'])
         self.assertEqual(5, res['p_value'])
         self.assertEqual(['1', '2'], res['intersections'])
+        self.assertEqual(3, res['term_size'])
 
     def test_get_result_in_mapped_term_json_no_colon_success(self):
         result = {'sources': [{'results': [{'description': 'somedescription',
                                             'details': {'PValue': 5},
                                             'url': 'someurl',
+                                            'nodes': 2,
                                             'hitGenes': ['1', '2']}]}]}
         res = cdiquerygenestotermcmd.get_result_in_mapped_term_json(result)
         self.assertEqual('somedescription', res['name'])
@@ -231,6 +234,7 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
         self.assertEqual('someurl', res['description'])
         self.assertEqual(5, res['p_value'])
         self.assertEqual(['1', '2'], res['intersections'])
+        self.assertEqual(2, res['term_size'])
 
     def test_successful_run(self):
         temp_dir = tempfile.mkdtemp()
@@ -243,6 +247,7 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
                 qres = {'sources': [{'results': [{'description': 'somedescription',
                                                   'details': {'PValue': 5},
                                                   'url': 'someurl',
+                                                  'nodes': 4,
                                                   'hitGenes': ['1', '2']}]}]}
                 m.get('http://foo/integratedsearch/v1/t?start=0&size=1',
                       json=qres, complete_qs=True)
@@ -263,6 +268,7 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
                 self.assertEqual(5, res['p_value'])
                 self.assertEqual('someurl', res['description'])
                 self.assertEqual(['1', '2'], res['intersections'])
+                self.assertEqual(4, res['term_size'])
 
         finally:
             shutil.rmtree(temp_dir)

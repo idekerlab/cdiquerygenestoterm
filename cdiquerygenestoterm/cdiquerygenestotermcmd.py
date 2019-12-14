@@ -154,10 +154,12 @@ def get_result_in_mapped_term_json(resultasdict):
         source = 'NA'
     else:
         source = firstresult['description'][0:colon_loc]
+
     theres = {'name': firstresult['description'][colon_loc + 1:].lstrip(),
               'source': source,
               'p_value': firstresult['details']['PValue'],
               'description': firstresult['url'],
+              'term_size': firstresult['nodes'],
               'intersections': firstresult['hitGenes']}
 
     return theres
@@ -215,7 +217,24 @@ def main(args):
         Running gene enrichment against Integrated Query
 
         Takes file with comma delimited list of genes as input and
-        outputs matching term if any
+        uses Integrated Query (iQuery) enrichment service to 
+        to find best network that best matches query genes. This
+        tool then uses the network name as the term name.
+        
+        The result is sent to standard out in JSON format 
+        as follows:
+        
+        {
+         "name":"<TERM NAME WHICH IS NAME OF NETWORK>",
+         "source":"<SOURCE OF NETWORK>",
+         "p_value":<PVALUE>,
+         "description":"<URL OF NETWORK IN NDEx>",
+         "term_size":<NUMBER OF NODES IN NETWORK>,
+         "intersections":["<LIST OF FOUND IN NETWORK>"]
+        }
+        
+        NOTE: term_size is set to number of nodes in network
+              and NOT number of genes
     """
 
     theargs = _parse_arguments(desc, args[1:])
