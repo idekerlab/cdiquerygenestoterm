@@ -80,10 +80,62 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_get_best_result_by_singularity_one_entry(self):
+        qres = {'sources': [{'results': [{'description': 'somedescription',
+                                          'details': {'PValue': 5,
+                                                      'similarity': 0.002},
+                                          'url': 'someurl',
+                                          'nodes': 4,
+                                          'hitGenes': ['1', '2']}]}]}
+        res = cdiquerygenestotermcmd.get_best_result_by_similarity(qres)
+        self.assertEqual('somedescription', res['description'])
+
+    def test_get_best_result_by_singularity_two_entries(self):
+        qres = {'sources': [{'results': [{'description': 'somedescription',
+                                          'details': {'PValue': 5,
+                                                      'similarity': 0.002},
+                                          'url': 'someurl',
+                                          'nodes': 4,
+                                          'hitGenes': ['1', '2']},
+                                         {'description': 'somedescription2',
+                                          'details': {'PValue': 5,
+                                                      'similarity': 0.4},
+                                          'url': 'someurl',
+                                          'nodes': 4,
+                                          'hitGenes': ['1', '2']}
+                                         ]}]}
+        res = cdiquerygenestotermcmd.get_best_result_by_similarity(qres)
+        self.assertEqual('somedescription2', res['description'])
+        self.assertEqual(0.4, res['details']['similarity'])
+
+    def test_get_best_result_by_singularity_three_entries(self):
+        qres = {'sources': [{'results': [{'description': 'somedescription',
+                                          'details': {'PValue': 5,
+                                                      'similarity': 0.41},
+                                          'url': 'someurl',
+                                          'nodes': 4,
+                                          'hitGenes': ['1', '2']},
+                                         {'description': 'somedescription2',
+                                          'details': {'PValue': 5,
+                                                      'similarity': 0.4},
+                                          'url': 'someurl',
+                                          'nodes': 4,
+                                          'hitGenes': ['1', '2']},
+                                         {'description': 'somedescription3',
+                                          'details': {'PValue': 5,
+                                                      'similarity': 0.2},
+                                          'url': 'someurl',
+                                          'nodes': 4,
+                                          'hitGenes': ['1', '2']}
+                                         ]}]}
+        res = cdiquerygenestotermcmd.get_best_result_by_similarity(qres)
+        self.assertEqual('somedescription', res['description'])
+        self.assertEqual(0.41, res['details']['similarity'])
+
     def test_get_completed_result_error(self):
         with requests_mock.Mocker() as m:
             m.get('http://foo/integratedsearch/'
-                  'v1/mytaskid?start=0&size=1',
+                  'v1/mytaskid',
                   status_code=500)
             res = cdiquerygenestotermcmd.\
                 get_completed_result('http://foo',
@@ -95,7 +147,7 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
     def test_get_completed_result_successful(self):
         with requests_mock.Mocker() as m:
             m.get('http://foo/integratedsearch/'
-                  'v1/mytaskid?start=0&size=1',
+                  'v1/mytaskid',
                   json={'hi': 'there'})
             res = cdiquerygenestotermcmd.\
                 get_completed_result('http://foo',
@@ -210,7 +262,7 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
 
     def test_get_result_in_mapped_term_json_with_colon_success(self):
         result = {'sources': [{'results': [{'description': 'hi: somedescription',
-                                            'details': {'PValue': 5},
+                                            'details': {'PValue': 5, 'similarity': 0.1},
                                             'url': 'someurl',
                                             'nodes': 3,
                                             'hitGenes': ['1', '2']}]}]}
@@ -224,7 +276,8 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
 
     def test_get_result_in_mapped_term_json_no_colon_success(self):
         result = {'sources': [{'results': [{'description': 'somedescription',
-                                            'details': {'PValue': 5},
+                                            'details': {'PValue': 5,
+                                                        'similarity': 0.001},
                                             'url': 'someurl',
                                             'nodes': 2,
                                             'hitGenes': ['1', '2']}]}]}
@@ -245,11 +298,12 @@ class TestCdgprofilergenestoterm(unittest.TestCase):
             user_agent = 'cdiquerygenestoterm/' + cdiquerygenestoterm.__version__
             with requests_mock.Mocker() as m:
                 qres = {'sources': [{'results': [{'description': 'somedescription',
-                                                  'details': {'PValue': 5},
+                                                  'details': {'PValue': 5,
+                                                              'similarity': 0.002},
                                                   'url': 'someurl',
                                                   'nodes': 4,
                                                   'hitGenes': ['1', '2']}]}]}
-                m.get('http://foo/integratedsearch/v1/t?start=0&size=1',
+                m.get('http://foo/integratedsearch/v1/t',
                       json=qres, complete_qs=True)
                 m.get('http://foo/integratedsearch/v1/t/status',
                       json={'progress': 100,

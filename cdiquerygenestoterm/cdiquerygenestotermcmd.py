@@ -8,6 +8,11 @@ import requests
 import time
 import cdiquerygenestoterm
 
+SOURCES_KEY = 'sources'
+RESULTS_KEY = 'results'
+DETAILS_KEY = 'details'
+SIMILARITY_KEY = 'similarity'
+
 
 def _parse_arguments(desc, args):
     """
@@ -58,7 +63,7 @@ def get_completed_result(resturl, taskid, user_agent,
     :return:
     """
     res = requests.get(resturl + '/integratedsearch/v1/' + taskid +
-                       '?start=0&size=1',
+                       '',
                        headers={'Content-Type': 'application/json',
                                 'User_agent': user_agent},
                        timeout=timeout)
@@ -112,55 +117,77 @@ def wait_for_result(resturl, taskid, user_agent, polling_interval=1,
     return False
 
 
+def get_best_result_by_similarity(resultasdict):
+    """
+    Gets best result by cosine similarity. The service
+    currently sorts by pvalue, but this is not returning
+    the best result so lets use cosine similarity
+
+    :param resultasdict:
+    :type resultasdict: dict
+    :return: best result as a dict
+    :rtype: dict
+    """
+    best_similarity = -1.0
+    best_result = None
+    for cursource in resultasdict[SOURCES_KEY]:
+        for curresult in cursource[RESULTS_KEY]:
+            if best_similarity == -1.0 or \
+               curresult[DETAILS_KEY][SIMILARITY_KEY] > best_similarity:
+                best_result = curresult
+                best_similarity = curresult[DETAILS_KEY][SIMILARITY_KEY]
+    return best_result
+
+
 def get_result_in_mapped_term_json(resultasdict):
     """
 
     :param resultasdict:
     :return:
     """
-    sources = 'sources'
-    results = 'results'
+
     if resultasdict is None:
         sys.stderr.write('Results are None\n')
         return None
 
-    if sources not in resultasdict:
+    if SOURCES_KEY not in resultasdict:
         sys.stderr.write('No sources found in results\n')
         return None
 
-    if resultasdict[sources] is None:
+    if resultasdict[SOURCES_KEY] is None:
         sys.stderr.write('Source is None\n')
         return None
 
-    if len(resultasdict[sources]) <= 0:
+    if len(resultasdict[SOURCES_KEY]) <= 0:
         sys.stderr.write('Source is empty\n')
         return None
 
-    if results not in resultasdict[sources][0]:
+    if RESULTS_KEY not in resultasdict[SOURCES_KEY][0]:
         sys.stderr.write('Results not in source\n')
         return None
 
-    if resultasdict[sources][0][results] is None:
+    if resultasdict[SOURCES_KEY][0][RESULTS_KEY] is None:
         sys.stderr.write('First result is None')
         return None
 
-    if len(resultasdict[sources][0][results]) <= 0:
+    if len(resultasdict[SOURCES_KEY][0][RESULTS_KEY]) <= 0:
         sys.stderr.write('No result found\n')
         return None
 
-    firstresult = resultasdict[sources][0][results][0]
-    colon_loc = firstresult['description'].find(':')
+    bestresult = get_best_result_by_similarity(resultasdict)
+
+    colon_loc = bestresult['description'].find(':')
     if colon_loc == -1:
         source = 'NA'
     else:
-        source = firstresult['description'][0:colon_loc]
+        source = bestresult['description'][0:colon_loc]
 
-    theres = {'name': firstresult['description'][colon_loc + 1:].lstrip(),
+    theres = {'name': bestresult['description'][colon_loc + 1:].lstrip(),
               'source': source,
-              'p_value': firstresult['details']['PValue'],
-              'description': firstresult['url'],
-              'term_size': firstresult['nodes'],
-              'intersections': firstresult['hitGenes']}
+              'p_value': bestresult['details']['PValue'],
+              'description': bestresult['url'],
+              'term_size': bestresult['nodes'],
+              'intersections': bestresult['hitGenes']}
 
     return theres
 
@@ -218,8 +245,9 @@ def main(args):
 
         Takes file with comma delimited list of genes as input and
         uses Integrated Query (iQuery) enrichment service to 
-        to find best network that best matches query genes. This
-        tool then uses the network name as the term name.
+        to find best network that best matches query genes. The
+        best network is the one with highest similarity score.
+        This tool then uses the network name as the term name.
         
         The result is sent to standard out in JSON format 
         as follows:
