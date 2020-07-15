@@ -8,11 +8,11 @@ Installation
 Stable release
 --------------
 
-To install Community Detection Gprofiler Gene To Term Mapper, run this command in your terminal:
+To install Community Detection iQuery Gene To Term Mapper, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install cdgprofilergenestoterm
+    $ pip install cdiquerygenestoterm
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
@@ -30,13 +30,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/ndexbio/cdgprofilergenestoterm
+    $ git clone git://github.com/idekerlab/cdiquerygenestoterm
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/ndexbio/cdgprofilergenestoterm/tarball/master
+    $ curl  -OL https://github.com/idekerlab/cdiquerygenestoterm/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -45,5 +45,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/ndexbio/cdgprofilergenestoterm
-.. _tarball: https://github.com/ndexbio/cdgprofilergenestoterm/tarball/master
+.. _Github repo: https://github.com/idekerlab/cdiquerygenestoterm
+.. _tarball: https://github.com/idekerlab/cdiquerygenestoterm/tarball/master

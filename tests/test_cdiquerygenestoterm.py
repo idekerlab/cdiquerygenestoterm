@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-test_cdgprofilergenestoterm
+test_cdiquerygenestoterm
 ----------------------------------
 
-Tests for `cdgprofilergenestoterm` module.
+Tests for `cdiquerygenestoterm` module.
 """
 
 import os
@@ -21,7 +21,7 @@ import cdiquerygenestoterm
 from cdiquerygenestoterm import cdiquerygenestotermcmd
 
 
-class TestCdgprofilergenestoterm(unittest.TestCase):
+class TestCdiquerygenestoterm(unittest.TestCase):
 
     def setUp(self):
         pass

@@ -1,10 +1,10 @@
-.. cdgprofilergenestoterm documentation master file, created by
+.. cdiquerygenestoterm documentation master file, created by
    sphinx-quickstart on Tue Jul  9 22:26:36 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Community Detection Gprofiler Gene To Term Mapper's documentation!
-======================================
+Welcome to Community Detection iQuery Gene To Term Mapper's documentation!
+================================================================================
 
 Contents:
 
@@ -15,7 +15,8 @@ Contents:
    installation
    usage
    contributing
-   authorshistory
+   authors
+   history
 
 Indices and tables
 ==================

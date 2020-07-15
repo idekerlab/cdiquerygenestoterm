@@ -1,31 +1,69 @@
 ===================================================
-Community Detection Gprofiler Gene To Term Mapper
+Community Detection iQuery Gene To Term Mapper
 ===================================================
 
-.. image:: https://img.shields.io/pypi/v/cdgprofilergenestoterm.svg
-        :target: https://pypi.python.org/pypi/cdgprofilergenestoterm
+This repository creates a CDAPS compatible functional enrichment Docker image using `iQuery service <http://iquery.ndexbio.org>`_
 
-.. image:: https://img.shields.io/travis/ndexbio/cdgprofilergenestoterm.svg
-        :target: https://travis-ci.org/ndexbio/cdgprofilergenestoterm
+Dependencies
+------------
 
-.. image:: https://readthedocs.org/projects/cdgprofilergenestoterm/badge/?version=latest
-        :target: https://cdgprofilergenestoterm.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
+* `Docker <https://www.docker.com/>`_
+* `make <https://www.gnu.org/software/make/>`_ (to build)
+* Python (to build)
 
-.. image:: https://requires.io/github/ndexbio/cdgprofilergenestoterm/requirements.svg?branch=master
-        :target: https://requires.io/github/ndexbio/cdgprofilergenestoterm/requirements?branch=master
-        :alt: Dependencies
+Direct invocation
+------------------
 
+Version `0.4.0` can be directly pulled from `Dockerhub <https://hub.docker.com/>`_ with this command:
 
-Maps genes to terms
+.. code-block::
 
-* Free software: BSD license
-* Documentation: https://cdgprofilergenestoterm.readthedocs.io.
+   docker pull coleslawndex/cdiquerygenestoterm:0.4.0
 
-Features
+Building
 --------
 
-* TODO
+.. code-block::
+
+   git clone https://github.com/idekerlab/cdiquerygenestoterm
+   cd cdiquerygenestoterm
+   make dockerbuild
+
+Run **make** command with no arguments to see other build/deploy options including creation of Docker image
+
+.. code-block::
+
+   make
+
+Output:
+
+.. code-block::
+
+   clean                remove all build, test, coverage and Python artifacts
+   clean-build          remove build artifacts
+   clean-pyc            remove Python file artifacts
+   clean-test           remove test and coverage artifacts
+   lint                 check style with flake8
+   test                 run tests quickly with the default Python
+   test-all             run tests on every Python version with tox
+   coverage             check code coverage quickly with the default Python
+   docs                 generate Sphinx HTML documentation, including API docs
+   servedocs            compile the docs watching for changes
+   testrelease          package and upload a TEST release
+   release              package and upload a release
+   dist                 builds source and wheel package
+   install              install the package to the active Python's site-packages
+   dockerbuild          build docker image and store in local repository
+   dockerpush           push image to dockerhub
+
+
+Usage
+-----
+
+.. code-block::
+
+   docker run -v coleslawndex/cdiquerygenestoterm:0.4.0 -h
+
 
 Credits
 ---------
