@@ -2,7 +2,7 @@
 Community Detection iQuery Gene To Term Mapper
 ===================================================
 
-This repository creates a CDAPS compatible functional enrichment Docker image using `iQuery service <http://iquery.ndexbio.org>`_
+This repository creates a CDAPS compatible functional enrichment Docker image using `iQuery service <http://ndexbio.org/iquery>`_
 
 Dependencies
 ------------
